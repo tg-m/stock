@@ -94,15 +94,36 @@ def EMA(data, size):
 
     y[0] = data[0]
 
-    a = 0.5
+    a = 2.0/(1.0 + size)
     a_ = 1 - a
+
+    # TODO:
+    # add stopping after number of terms indicating 99.9% of the weights
 
     for i in xrange(1, lenData):
         y[i] = a*data[i] + a_*y[i - 1]
 
+
     return y
 
 def EWMA(data, size): return EMA(data, size)
+
+class MACDResult(object):
+    def __init__(self, slow, fast, macd, signal, histogram):
+        self.slow = slow
+        self.fast = fast
+        self.macd = macd
+        self.signal = signal
+        self.histogram = histogram
+
+def MACD(data, fast_len=12, slow_len=26, signal_len=9, mov_ave=EMA):
+    slow = mov_ave(data, slow_len)
+    fast = mov_ave(data, fast_len)
+    macd = fast - slow
+    signal = mov_ave(macd, signal_len)
+    histogram = macd - signal
+    return MACDResult(slow, fast, macd, signal, histogram)
+
 
 def main():
     return 0

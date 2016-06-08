@@ -69,12 +69,17 @@ class EMATest(unittest.TestCase):
         self.failUnless(all(expected == actual))
 
     def test_arithmethatically_increaing_input(self):
-        actual = ta.WMA(np.linspace(1, 10, 10), 3)
+        actual = ta.EMA(np.linspace(1, 10, 10), 3)
         expected = np.concatenate([[14/6.0, 14/6.0], np.linspace(14, 56, 8)/6.0])
+        print actual
         return
         self.failUnless(len(expected) == len(actual))
         self.failUnless(all(expected == actual))
 
+
+class MACD_Test(unittest.TestCase):
+    def test_MACD_just_call_to_evaluate_correct_implementation(self):
+        macd = ta.MACD(np.linspace(1, 5, 50))
 
 def main():
     unittest.main()
