@@ -117,6 +117,7 @@ class MACDResult(object):
         self.histogram = histogram
 
 def MACD(data, fast_len=12, slow_len=26, signal_len=9, mov_ave=EMA):
+    '''Moving Average Convergence/Divergence'''
     slow = mov_ave(data, slow_len)
     fast = mov_ave(data, fast_len)
     macd = fast - slow
@@ -124,6 +125,27 @@ def MACD(data, fast_len=12, slow_len=26, signal_len=9, mov_ave=EMA):
     histogram = macd - signal
     return MACDResult(slow, fast, macd, signal, histogram)
 
+def TP(stock):
+    '''Typical Price'''
+    return (stock['high'] + stock['low'] + stock['close'])/3.0
+
+def CCI(stock, size):
+    '''Commodity Channel Index'''
+    tp = TP(stock)
+    tp_ave = SMA(tp, size)
+    denom = 0.015 * SMA(abs(tp - tp_ave), size)
+    result = (tp - tp_ave)/denom
+    result[0] = 0
+    result[1:size] = np.nan
+    return result
+
+def DPO(stock, size):
+    '''Detrended Price Oscillator'''
+    sma = SMA(stock['close'], size)
+    s = int(size)/2 + 1
+    result = stock['close'] - np.concatenate([np.linspace(0, 0, s), sma[:len(sma) - s]])
+
+    return result
 
 def main():
     return 0
