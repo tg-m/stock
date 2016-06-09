@@ -125,6 +125,37 @@ class DPO_Test(unittest.TestCase):
 
         self.failUnless(10 == len(actual))
 
+class TR_Test(unittest.TestCase):
+    def test_TR_just_call(self):
+        h = np.linspace(4, 4, 10)
+        l = np.linspace(0.5, 0.5, 10)
+        c = np.linspace(1.5, 1.5, 10)
+        o = np.linspace(1.3, 1.5, 10)
+        stock = {'low':l, 'high':h, 'close':c, 'open':o}
+        actual = ta.TR(stock)
+        self.failUnless(10 == len(actual))
+
+class ATR_Test(unittest.TestCase):
+    def test_TR_just_call(self):
+        h = np.linspace(4, 4, 10)
+        l = np.linspace(0.5, 0.5, 10)
+        c = np.linspace(1.5, 1.5, 10)
+        o = np.linspace(1.3, 1.5, 10)
+        stock = {'low':l, 'high':h, 'close':c, 'open':o}
+        actual = ta.ATR(stock, 3)
+        self.failUnless(10 == len(actual))
+
+class ATRBand_Test(unittest.TestCase):
+    def test_TR_just_call(self):
+        h = np.linspace(4, 4, 10)
+        l = np.linspace(0.5, 0.5, 10)
+        c = np.linspace(1.5, 1.5, 10)
+        o = np.linspace(1.3, 1.5, 10)
+        stock = {'low':l, 'high':h, 'close':c, 'open':o}
+        actual = ta.ATRBand(stock, 5, 2)
+        self.failUnless(10 == len(actual.low))
+        self.failUnless(10 == len(actual.high))
+
 def main():
     unittest.main()
 

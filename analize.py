@@ -7,8 +7,59 @@ import math
 import datetime as dt
 import matplotlib.gridspec as gridspec
 
+from matplotlib.dates import date2num
+
+from matplotlib import finance as fin
+
 import ta
 
+
+from matplotlib.patches import Rectangle
+from matplotlib.lines import Line2D
+
+def plotCandlestick(ax, quotes, rWidth=0.3, lWidth=1, colorup='g', colordown='r', alpha=1.0):
+    '''
+    Plots quotes on the ax axes
+
+    ax        - axes on which plotting takes place
+    quotes    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    rWidth    - width of the rectangle
+    lWidth    - width of the line
+    colorup   - colour used when close >= open
+    colordown - colour used when close <  open
+    alpha     - the alpha level (recommended is 1.0)
+
+    Note that we plot only quote's dates with NaNs to ensure that x-axis is labeled with
+    the proper date format.
+    '''
+    ax.plot(quotes['date'], np.linspace(np.nan, np.nan, len(quotes)))
+    for q in quotes:
+        t = q['date']
+        o = q['open']
+        h = q['high']
+        l = q['low']
+        c = q['close']
+
+        if c >= o:
+            color = colorup
+        else:
+            color = colordown
+        rBottom = min(c, o)
+        rHeight = abs(c - o)
+
+        rect = Rectangle(xy = (t, rBottom), width=-rWidth, height=rHeight, facecolor=color, edgecolor=color)
+        rect.set_alpha(alpha)
+        ax.add_patch(rect)
+
+        rect = Rectangle(xy = (t, rBottom), width=rWidth, height=rHeight, facecolor=color, edgecolor=color)
+        rect.set_alpha(alpha)
+        ax.add_patch(rect)
+
+        line = Line2D(xdata=(t, t), ydata=(l, h), color=color, linewidth=lWidth, antialiased=True);
+        line.set_alpha(alpha)
+        ax.add_line(line)
+
+    ax.autoscale_view()
 
 def printCsvName(csv):
     for n in csv.dtype.names:
@@ -41,18 +92,26 @@ def x(stockFile, actionsFile, date):
     def mPlot(ax, x, y, label, date):
         ax.plot(x[x > date], y[x > date], label=label)
 
-    mPlot(axL, x, y, stock.name[0], date)
+
+    def pltCandle(ax, x, quote, date):
+        ta.plotCandlestick(ax, quote[x > date])
+
+    pltCandle(axL, x, d, date)
+    #mPlot(axL, x, y, stock.name[0], date)
+
+
+
     for s in [15, 30, 45]:
         mPlot(axL, x, ta.EMA(y, s), ''.join(['EMA ', str(s)]), date)
 
-    mPlot(axL, x, ta.TP(d), 'TP', date)
+    #mPlot(axL, x, ta.TP(d), 'TP', date)
+
+    atrb = ta.ATRBand(d, 21, 3)
+    mPlot(axL, x, atrb.low, 'ATRB low', date)
+    mPlot(axL, x, atrb.high, 'ATRB high', date)
 
     #axL.plot(x, y, label=stock.name[0])
 
-    #axL.plot(x, ta.EMA(y, 4), label='EMA 4')
-    #axL.plot(x, ta.EMA(y, 9), label='EMA 9')
-    #axL.plot(x, ta.EMA(y, 18), label='EMA 18')
-    #axL.plot(x, ta.EMA(y, 35), label='EMA 35')
     #axL.plot(x, ta.TP(d), label='TP')
 
 
@@ -67,15 +126,18 @@ def x(stockFile, actionsFile, date):
 
 
     axL.grid(True)
-    axL.legend(loc='best')
+    axL.legend().draggable()
 
 
     axS = plt.subplot(gs[2, :])
     macd = ta.MACD(y)
     cci = ta.CCI(d, 14)
     dpo = ta.DPO(d, 7)
+    tr = ta.TR(d)
+    atr = ta.ATR(d, 8)
 
-    mPlot(axS, x, dpo, 'DPO', date)
+    mPlot(axS, x, atr, 'ATR', date)
+    mPlot(axS, x, tr, 'TR', date)
 
 
     axS.legend(loc='best')

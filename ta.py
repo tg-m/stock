@@ -6,6 +6,52 @@ import math
 import datetime as dt
 
 
+from matplotlib.patches import Rectangle
+from matplotlib.lines import Line2D
+
+def plotCandlestick(ax, quotes, rWidth=0.3, lWidth=1, colorup='g', colordown='r', alpha=1.0):
+    '''
+    Plots quotes on the ax axes
+
+    ax        - axes on which plotting takes place
+    quotes    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    rWidth    - width of the rectangle
+    lWidth    - width of the line
+    colorup   - colour used when close >= open
+    colordown - colour used when close <  open
+    alpha     - the alpha level (recommended is 1.0)
+
+    Note that we plot only quote's dates with NaNs to ensure that x-axis is labeled with
+    the proper date format.
+    '''
+    ax.plot(quotes['date'], np.linspace(np.nan, np.nan, len(quotes)), color='k')
+    for q in quotes:
+        t = q['date']
+        o = q['open']
+        h = q['high']
+        l = q['low']
+        c = q['close']
+
+        if c >= o:
+            color = colorup
+        else:
+            color = colordown
+        rBottom = min(c, o)
+        rHeight = abs(c - o)
+
+        rect = Rectangle(xy = (t, rBottom), width=-rWidth, height=rHeight, facecolor=color, edgecolor=color)
+        rect.set_alpha(alpha)
+        ax.add_patch(rect)
+
+        rect = Rectangle(xy = (t, rBottom), width=rWidth, height=rHeight, facecolor=color, edgecolor=color)
+        rect.set_alpha(alpha)
+        ax.add_patch(rect)
+
+        line = Line2D(xdata=(t, t), ydata=(l, h), color=color, linewidth=lWidth, antialiased=True);
+        line.set_alpha(alpha)
+        ax.add_line(line)
+
+    ax.autoscale_view()
 def SMA(data, size):
     '''
     SMA - Simple Moving Average
@@ -129,6 +175,32 @@ def TP(stock):
     '''Typical Price'''
     return (stock['high'] + stock['low'] + stock['close'])/3.0
 
+def TR(stock):
+    '''True Range'''
+    lc = len(stock['close'])
+    c_prev = np.concatenate([[0.], stock['close'][:lc-1]])
+
+    h_l = stock['high'] - stock['low']
+    h_c_prev = abs(stock['high'] - c_prev)
+    l_c_prev = abs(stock['low'] - c_prev)
+    return np.amax([h_l, h_c_prev, l_c_prev], axis=0)
+
+def ATR(stock, size, ave=EMA):
+    '''Average True Range'''
+    return ave(TR(stock), size)
+
+class ATRBandResult(object):
+    def __init__(self, low, high, name):
+        self.low = low
+        self.high = high
+        self.name = name
+
+def ATRBand(stock, size, aRange, ave=EMA):
+    atr = ATR(stock, size, ave)
+    return ATRBandResult(stock['close']-aRange*atr,
+                         stock['close']+aRange*atr,
+            ''.join(['ATRBand ', str(size), ' ', str(aRange)]))
+
 def CCI(stock, size):
     '''Commodity Channel Index'''
     tp = TP(stock)
@@ -147,8 +219,11 @@ def DPO(stock, size):
 
     return result
 
+
+
 def main():
     return 0
 
 if __name__ == '__main__':
     main()
+
