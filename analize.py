@@ -121,7 +121,7 @@ def x(stockFile, actionsFile, date):
     for a in actions:
         act_date = dt.datetime.strptime(str(a.date), '%Y-%m-%d').date()
         if act_date >= date:
-            axL.text(a.date, d[d['date'] == act_date].kurs_zamkniecia, a.action,
+            axL.text(a.date, d[d['date'] == act_date]['close'], a.action,
                 color='red' if a.action.lower() == 'sell' else 'green')
 
 
@@ -136,11 +136,21 @@ def x(stockFile, actionsFile, date):
     tr = ta.TR(d)
     atr = ta.ATR(d, 8)
 
-    mPlot(axS, x, atr, 'ATR', date)
-    mPlot(axS, x, tr, 'TR', date)
+    mtm1 = ta.MTM(d, 1)
+    mtm2 = ta.MTM(d, 2)
+    mtm4 = ta.MTM(d, 8)
+
+    roc = ta.RoC(stock, 1)
+
+    mPlot(axS, x, roc, 'RoC 1', date)
+
+    #for i in [1, 2, 4, 8]:
+        #mPlot(axS, x, ta.MTM(d, i), 'MTM'+str(i), date)
 
 
-    axS.legend(loc='best')
+
+
+    axS.legend().draggable()
 
     axS.grid(True)
 

@@ -81,13 +81,20 @@ class MACD_Test(unittest.TestCase):
     def test_MACD_just_call_to_evaluate_correct_implementation(self):
         macd = ta.MACD(np.linspace(1, 5, 50))
 
+class StockData:
+    h = np.linspace(4, 4, 10)
+    l = np.linspace(0.5, 0.5, 10)
+    c = np.linspace(1.5, 1.5, 10)
+    o = np.linspace(1.3, 1.5, 10)
+    stock = {'low':l, 'high':h, 'close':c, 'open':o}
+
 class TP_Test(unittest.TestCase):
     def test_TP_equal_length_dictionary_as_input(self):
         h = np.linspace(4, 4, 10)
         l = np.linspace(0.5, 0.5, 10)
         c = np.linspace(1.5, 1.5, 10)
         d = {'low':l, 'high':h, 'close':c}
-        actual = ta.TP(d)
+        actual = ta.TP(StockData.stock)
         expected = np.linspace(2, 2, 10)
 
         self.failUnless(len(expected) == len(actual))
@@ -96,65 +103,49 @@ class TP_Test(unittest.TestCase):
 
 class CCI_Test(unittest.TestCase):
     def test_CCI_whether_the_output_has_the_required_length_dictionary_as_input(self):
-        h = np.linspace(4, 4, 10)
-        l = np.linspace(0.5, 0.5, 10)
-        c = np.linspace(1.5, 1.5, 10)
-        o = np.linspace(1.3, 1.5, 10)
-        stock = {'low':l, 'high':h, 'close':c, 'open':o}
-        actual = ta.CCI(stock, 4)
-
+        actual = ta.CCI(StockData.stock, 4)
         self.failUnless(10 == len(actual))
 
 class DPO_Test(unittest.TestCase):
     def test_DPO_with_even_size(self):
-        h = np.linspace(4, 4, 10)
-        l = np.linspace(0.5, 0.5, 10)
-        c = np.linspace(1.5, 1.5, 10)
-        o = np.linspace(1.3, 1.5, 10)
-        stock = {'low':l, 'high':h, 'close':c, 'open':o}
-        actual = ta.DPO(stock, 4)
-
+        actual = ta.DPO(StockData.stock, 4)
         self.failUnless(10 == len(actual))
-    def test_DPO_with_odd_size(self):
-        h = np.linspace(4, 4, 10)
-        l = np.linspace(0.5, 0.5, 10)
-        c = np.linspace(1.5, 1.5, 10)
-        o = np.linspace(1.3, 1.5, 10)
-        stock = {'low':l, 'high':h, 'close':c, 'open':o}
-        actual = ta.DPO(stock, 5)
 
+    def test_DPO_with_odd_size(self):
+        actual = ta.DPO(StockData.stock, 5)
         self.failUnless(10 == len(actual))
 
 class TR_Test(unittest.TestCase):
     def test_TR_just_call(self):
-        h = np.linspace(4, 4, 10)
-        l = np.linspace(0.5, 0.5, 10)
-        c = np.linspace(1.5, 1.5, 10)
-        o = np.linspace(1.3, 1.5, 10)
-        stock = {'low':l, 'high':h, 'close':c, 'open':o}
-        actual = ta.TR(stock)
+        actual = ta.TR(StockData.stock)
         self.failUnless(10 == len(actual))
 
 class ATR_Test(unittest.TestCase):
     def test_TR_just_call(self):
-        h = np.linspace(4, 4, 10)
-        l = np.linspace(0.5, 0.5, 10)
-        c = np.linspace(1.5, 1.5, 10)
-        o = np.linspace(1.3, 1.5, 10)
-        stock = {'low':l, 'high':h, 'close':c, 'open':o}
-        actual = ta.ATR(stock, 3)
+        actual = ta.ATR(StockData.stock, 3)
         self.failUnless(10 == len(actual))
 
 class ATRBand_Test(unittest.TestCase):
     def test_TR_just_call(self):
-        h = np.linspace(4, 4, 10)
-        l = np.linspace(0.5, 0.5, 10)
-        c = np.linspace(1.5, 1.5, 10)
-        o = np.linspace(1.3, 1.5, 10)
-        stock = {'low':l, 'high':h, 'close':c, 'open':o}
-        actual = ta.ATRBand(stock, 5, 2)
+        actual = ta.ATRBand(StockData.stock, 5, 2)
         self.failUnless(10 == len(actual.low))
         self.failUnless(10 == len(actual.high))
+
+class MTM_Test(unittest.TestCase):
+    def test_MTM(self):
+        actual = ta.MTM(StockData.stock, 1)
+        expected = np.concatenate([[1.5], np.linspace(0, 0, 9)])
+
+        self.failUnless(len(expected) == len(actual))
+        self.failUnless(all(expected == actual))
+
+class RoC_Test(unittest.TestCase):
+    def test_RoC(self):
+        actual = ta.RoC(StockData.stock, 1)
+        expected = np.concatenate([[1.5], np.linspace(1, 1, 9)])
+
+        self.failUnless(len(expected) == len(actual))
+        self.failUnless(all(expected == actual))
 
 def main():
     unittest.main()
