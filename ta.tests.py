@@ -71,7 +71,6 @@ class EMATest(unittest.TestCase):
     def test_arithmethatically_increaing_input(self):
         actual = ta.EMA(np.linspace(1, 10, 10), 3)
         expected = np.concatenate([[14/6.0, 14/6.0], np.linspace(14, 56, 8)/6.0])
-        #print actual
         return
         self.failUnless(len(expected) == len(actual))
         self.failUnless(all(expected == actual))
@@ -146,6 +145,11 @@ class RoC_Test(unittest.TestCase):
 
         self.failUnless(len(expected) == len(actual))
         self.failUnless(all(expected == actual))
+
+class SRoC_Test(unittest.TestCase):
+    def test_SRoC_just_call_and_check_size_of_the_result(self):
+        actual = ta.SRoC(StockData.stock, 3, 1)
+        self.failUnless(10 == len(actual))
 
 def main():
     unittest.main()

@@ -141,8 +141,9 @@ def x(stockFile, actionsFile, date):
     mtm4 = ta.MTM(d, 8)
 
     roc = ta.RoC(stock, 1)
+    sroc = ta.SRoC(stock, 13, 21)
 
-    mPlot(axS, x, roc, 'RoC 1', date)
+    mPlot(axS, x, sroc, 'SRoC 13 21', date)
 
     #for i in [1, 2, 4, 8]:
         #mPlot(axS, x, ta.MTM(d, i), 'MTM'+str(i), date)

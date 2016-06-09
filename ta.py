@@ -174,11 +174,19 @@ def MACD(data, fast_len=12, slow_len=26, signal_len=9, mov_ave=EMA):
     return MACDResult(slow, fast, macd, signal, histogram)
 
 def TP(quote):
-    '''Typical Price'''
+    '''
+    Typical Price
+
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    '''
     return (quote['high'] + quote['low'] + quote['close'])/3.0
 
 def CCI(quote, size):
-    '''Commodity Channel Index'''
+    '''
+    Commodity Channel Index
+
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    '''
     tp = TP(quote)
     tp_ave = SMA(tp, size)
     denom = 0.015 * SMA(abs(tp - tp_ave), size)
@@ -188,7 +196,11 @@ def CCI(quote, size):
     return result
 
 def DPO(quote, size):
-    '''Detrended Price Oscillator'''
+    '''
+    Detrended Price Oscillator
+
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    '''
     sma = SMA(quote['close'], size)
     s = int(size)/2 + 1
     result = quote['close'] - np.concatenate([np.linspace(0, 0, s), sma[:len(sma) - s]])
@@ -197,7 +209,10 @@ def DPO(quote, size):
 
 
 def TR(quote):
-    '''True Range'''
+    '''
+    True Range
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    '''
     lc = len(quote['close'])
     c_prev = np.concatenate([[0.], quote['close'][:lc-1]])
 
@@ -207,7 +222,10 @@ def TR(quote):
     return np.amax([h_l, h_c_prev, l_c_prev], axis=0)
 
 def ATR(quote, size, ave=EMA):
-    '''Average True Range'''
+    '''
+    Average True Range
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    '''
     return ave(TR(quote), size)
 
 class ATRBandResult(object):
@@ -217,6 +235,10 @@ class ATRBandResult(object):
         self.name = name
 
 def ATRBand(quote, size, aRange, ave=EMA):
+    '''
+    Averga True Range Bands
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    '''
     atr = ATR(quote, size, ave)
     return ATRBandResult(quote['close']-aRange*atr,
                          quote['close']+aRange*atr,
@@ -226,7 +248,7 @@ def ATRBand(quote, size, aRange, ave=EMA):
 def MTM(quote, n, price='close'):
     '''
     Momentum
-    quote  - stock quotes
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
     n      - ticks before
     price  = open/high/low/close
     '''
@@ -235,9 +257,20 @@ def MTM(quote, n, price='close'):
     return d - d_s
 
 def RoC(quote, n, price='close'):
+    '''
+    Rate of Change
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    '''
     d = quote[price]
     d_s = np.concatenate([np.linspace(1., 1., n), d[:len(d) - n]])
     return d/d_s
+
+def SRoC(quote, meanSize, n, ave=EMA, price='close'):
+    '''
+    Smoothed Rate of Change
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    '''
+    return RoC({price : ave(quote[price], meanSize)}, n)
 
 def main():
     return 0
