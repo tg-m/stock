@@ -1,4 +1,7 @@
-import sys
+'''
+Technical Analysis tools in Python.
+'''
+
 from  matplotlib import mlab
 from matplotlib import pyplot as plt
 import numpy as np
@@ -24,7 +27,7 @@ def plotCandlestick(ax, quotes, rWidth=0.3, lWidth=1, colorup='g', colordown='r'
     Note that we plot only quote's dates with NaNs to ensure that x-axis is labeled with
     the proper date format.
     '''
-    ax.plot(quotes['date'], np.linspace(np.nan, np.nan, len(quotes)), color='k')
+    ax.plot(quotes['date'], np.linspace(np.nan, np.nan, len(quotes['date'])), color='k')
     for q in quotes:
         t = q['date']
         o = q['open']
@@ -133,6 +136,34 @@ def EMA(data, size):
 
     data - array with numerical data
     size - length of the moving average
+
+    returns EWMA(data, size, 2.0/(1.0 + size))
+    '''
+    return EWMA(data, size, 2.0/(1.0 + size))
+
+def SMMA(data, size):
+    '''
+    SMMA - Smoothed Modified Moving Average
+
+    data - array with numerical data
+    size - length of the moving average
+
+    returns EWMA(data, size, 1.0/size)
+    '''
+    return EWMA(data, size, 1.0/size)
+
+
+def EWMA(data, size, alpha):
+    '''
+    EMA - Exponential Weighted Moving Average
+
+    data - array with numerical data
+    size - length of the moving average
+    alpha - the exponential degree of weighting decrease
+
+    Note that this function differs from EMA by the fact that the alpha parameter is
+    explicitly required. This is also the most generalised version of exponential
+    moving average.
     '''
 
     lenData = len(data)
@@ -142,7 +173,7 @@ def EMA(data, size):
 
     y[0] = data[0]
 
-    a = 2.0/(1.0 + size)
+    a = alpha
     a_ = 1 - a
 
     # TODO:
@@ -154,9 +185,8 @@ def EMA(data, size):
 
     return y
 
-def EWMA(data, size): return EMA(data, size)
-
 class MACDResult(object):
+    '''MACD Result'''
     def __init__(self, slow, fast, macd, signal, histogram):
         self.slow = slow
         self.fast = fast
@@ -164,12 +194,19 @@ class MACDResult(object):
         self.signal = signal
         self.histogram = histogram
 
-def MACD(data, fast_len=12, slow_len=26, signal_len=9, mov_ave=EMA):
-    '''Moving Average Convergence/Divergence'''
-    slow = mov_ave(data, slow_len)
-    fast = mov_ave(data, fast_len)
+def MACD(data, fast_len=12, slow_len=26, signal_len=9, ave=EMA):
+    '''
+    Moving Average Convergence/Divergence
+
+    fast_len    - length of the smoothing function of the fast line
+    slow_len    - length of the smoothing function of the slow line
+    signal_len  - length of the smoothing function of the signal
+    ave         - smoothing function
+    '''
+    slow = ave(data, slow_len)
+    fast = ave(data, fast_len)
     macd = fast - slow
-    signal = mov_ave(macd, signal_len)
+    signal = ave(macd, signal_len)
     histogram = macd - signal
     return MACDResult(slow, fast, macd, signal, histogram)
 
@@ -211,6 +248,7 @@ def DPO(quote, size):
 def TR(quote):
     '''
     True Range
+
     quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
     '''
     lc = len(quote['close'])
@@ -224,11 +262,15 @@ def TR(quote):
 def ATR(quote, size, ave=EMA):
     '''
     Average True Range
+
     quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    size     - length of the smoothing function
+    ave      - smoothing function, default: EMA
     '''
     return ave(TR(quote), size)
 
 class ATRBandResult(object):
+    '''ATRBand Result'''
     def __init__(self, low, high, name):
         self.low = low
         self.high = high
@@ -237,7 +279,11 @@ class ATRBandResult(object):
 def ATRBand(quote, size, aRange, ave=EMA):
     '''
     Averga True Range Bands
+
     quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    size     - length of the smoothing function
+    aRange   - factor by which True Range is multiplied to construct bands
+    ave      - smoothing function, default: EMA
     '''
     atr = ATR(quote, size, ave)
     return ATRBandResult(quote['close']-aRange*atr,
@@ -248,9 +294,10 @@ def ATRBand(quote, size, aRange, ave=EMA):
 def MTM(quote, n, price='close'):
     '''
     Momentum
+
     quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
-    n      - ticks before
-    price  = open/high/low/close
+    n        - ticks before
+    price    - open/high/low/close, default: close
     '''
     d = quote[price]
     d_s = np.concatenate([np.linspace(0, 0, n), d[:len(d) - n]])
@@ -259,7 +306,10 @@ def MTM(quote, n, price='close'):
 def RoC(quote, n, price='close'):
     '''
     Rate of Change
+
     quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    n        - ticks before
+    price    - open/high/low/close, default: close
     '''
     d = quote[price]
     d_s = np.concatenate([np.linspace(1., 1., n), d[:len(d) - n]])
@@ -268,13 +318,107 @@ def RoC(quote, n, price='close'):
 def SRoC(quote, meanSize, n, ave=EMA, price='close'):
     '''
     Smoothed Rate of Change
+
     quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    meanSize - length of the smoothing function
+    ave      - smoothing function, default: EMA
+    n        - ticks before
+    price    - open/high/low/close, default: close
     '''
     return RoC({price : ave(quote[price], meanSize)}, n)
 
-def main():
-    return 0
+def Williams(quote, n):
+    '''
+    Williams %R Oscillator
 
-if __name__ == '__main__':
-    main()
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    n        - ticks before that should be taken into account`
+    '''
+    lenQ = len(quote['close'])
+    if n > lenQ: raise ValueError('n can not be greater than number of stock quotes')
+
+    l = np.linspace(np.nan, np.nan, lenQ)
+    h = np.linspace(np.nan, np.nan, lenQ)
+
+    for i in xrange(lenQ, 0, -1):
+        LOW = max(i-n, 0)
+        l[i-1] = min(quote['low'][LOW:i])
+        h[i-1] = max(quote['high'][LOW:i])
+
+
+    ch = quote['close'] - h
+    hl = h - l
+    hl[hl == 0] = -100.0
+
+    return 100.0*(ch/hl)
+
+class StochasticResult(object):
+    '''Stochastic Oscillator Result'''
+    def __init__(self, K, D, DSlow):
+        self.K = K
+        self.D = D
+        self.DSlow = DSlow
+
+def Stochastic(quote, n, ave_len, ave=SMA, wantSlow=True):
+    '''
+    Stochastic Oscillator
+
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    n        - ticks before that shouold be taken into account
+    ave_len  - length of the smoothing function
+    ave      - smoothing function
+    wantSlow - whether to include DSlow signal, default: True, but can be set to False in order
+               to speed computations slightly
+
+    Note that it returns StochasticResult(K, D, DSlow) thus it
+    '''
+    lenQ = len(quote['close'])
+    if n > lenQ: raise ValueError('n can not be greater than number of stock quotes')
+
+    l = np.linspace(np.nan, np.nan, lenQ)
+    h = np.linspace(np.nan, np.nan, lenQ)
+
+    for i in xrange(lenQ, 0, -1):
+        LOW = max(i-n, 0)
+        l[i-1] = min(quote['low'][LOW:i])
+        h[i-1] = max(quote['high'][LOW:i])
+
+
+    cl = quote['close'] - l
+    hl = h - l
+    hl[hl == 0] = 100.0
+
+    K = 100.0*(cl/hl)
+    D = ave(K, ave_len)
+    DSlow = ave(D, ave_len) if wantSlow else None
+
+    return StochasticResult(K, D, DSlow)
+
+def RSI(quote, n, ave=SMMA, price='close'):
+    '''
+    Relative Strength Index
+
+    quote    - array of dictionaries or objects that have fields: (date, open, high, low, close)
+    n        - ticks before that shouold be taken into account
+    ave      - smoothing function, default: SMMA
+    price    - open/high/low/close
+    '''
+    lenQ = len(quote['close'])
+    if n > lenQ: raise ValueError('n can not be greater than number of stock quotes')
+
+    up = np.linspace(np.nan, np.nan, lenQ)
+    down = np.linspace(np.nan, np.nan, lenQ)
+
+    for i in xrange(lenQ, 0, -1):
+        LOW = max(i-n, 0)
+        q = quote[price][LOW:i]
+        d = q[1:] - q[:-1]
+        up[i-1]   = sum(d[d>=0])
+        down[i-1] = -sum(d[d<0]) # Yes, minus because sum(...) < 0
+
+    RS = ave(up, n)/ave(down, n)
+
+    return 100.0 - 100.0/(1.0 + RS)
+
+
 

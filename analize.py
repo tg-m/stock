@@ -92,7 +92,6 @@ def x(stockFile, actionsFile, date):
     def mPlot(ax, x, y, label, date):
         ax.plot(x[x > date], y[x > date], label=label)
 
-
     def pltCandle(ax, x, quote, date):
         ta.plotCandlestick(ax, quote[x > date])
 
@@ -105,6 +104,8 @@ def x(stockFile, actionsFile, date):
         mPlot(axL, x, ta.EMA(y, s), ''.join(['EMA ', str(s)]), date)
 
     #mPlot(axL, x, ta.TP(d), 'TP', date)
+
+
 
     atrb = ta.ATRBand(d, 21, 3)
     mPlot(axL, x, atrb.low, 'ATRB low', date)
@@ -143,11 +144,22 @@ def x(stockFile, actionsFile, date):
     roc = ta.RoC(stock, 1)
     sroc = ta.SRoC(stock, 13, 21)
 
-    mPlot(axS, x, sroc, 'SRoC 13 21', date)
+    wmr = ta.Williams(stock, 2)
+
+    stc = ta.Stochastic(stock, 12, 3)
+
+    rsi = ta.RSI(stock,  7)
+
+    mPlot(axS, x, rsi, 'RSI', date)
+
+    #mPlot(axS, x, stc.K, 'K', date)
+    #mPlot(axS, x, stc.D, 'D', date)
+    #mPlot(axS, x, stc.DSlow, 'D slow', date)
+
+
 
     #for i in [1, 2, 4, 8]:
         #mPlot(axS, x, ta.MTM(d, i), 'MTM'+str(i), date)
-
 
 
 
@@ -155,6 +167,10 @@ def x(stockFile, actionsFile, date):
 
     axS.grid(True)
 
+    xticks = map(lambda(y): str(y), x[x > date])
+    #print xticks
+
+    #plt.xticks(np.linspace(0, len(xticks), len(xticks)), xticks)
     plt.show()
 
 

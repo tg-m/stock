@@ -75,6 +75,25 @@ class EMATest(unittest.TestCase):
         self.failUnless(len(expected) == len(actual))
         self.failUnless(all(expected == actual))
 
+class SMMA_Test(unittest.TestCase):
+    def test_size_greater_than_data_length_throws_errer(self):
+        with self.assertRaises(ValueError):
+            ta.SMMA(np.linspace(1, 1, 1), 2)
+
+    def test_only_ones_in_input_vector(self):
+        inData = np.linspace(1, 1, 10)
+        actual = ta.SMMA(np.linspace(1, 1, 10), 3)
+        expected = np.linspace(1, 1, 10)
+        self.failUnless(len(expected) == len(actual))
+        self.failUnless(all(expected == actual))
+
+    def test_arithmethatically_increaing_input(self):
+        actual = ta.SMMA(np.linspace(1, 10, 10), 3)
+        expected = np.concatenate([[14/6.0, 14/6.0], np.linspace(14, 56, 8)/6.0])
+        return
+        self.failUnless(len(expected) == len(actual))
+        self.failUnless(all(expected == actual))
+
 
 class MACD_Test(unittest.TestCase):
     def test_MACD_just_call_to_evaluate_correct_implementation(self):
@@ -85,14 +104,12 @@ class StockData:
     l = np.linspace(0.5, 0.5, 10)
     c = np.linspace(1.5, 1.5, 10)
     o = np.linspace(1.3, 1.5, 10)
-    stock = {'low':l, 'high':h, 'close':c, 'open':o}
+    inc = np.linspace(1, 20, 17)
+    dec = np.linspace(100, 20, 17)
+    stock = {'low':l, 'high':h, 'close':c, 'open':o, 'inc':inc, 'dec':dec}
 
 class TP_Test(unittest.TestCase):
     def test_TP_equal_length_dictionary_as_input(self):
-        h = np.linspace(4, 4, 10)
-        l = np.linspace(0.5, 0.5, 10)
-        c = np.linspace(1.5, 1.5, 10)
-        d = {'low':l, 'high':h, 'close':c}
         actual = ta.TP(StockData.stock)
         expected = np.linspace(2, 2, 10)
 
@@ -150,6 +167,38 @@ class SRoC_Test(unittest.TestCase):
     def test_SRoC_just_call_and_check_size_of_the_result(self):
         actual = ta.SRoC(StockData.stock, 3, 1)
         self.failUnless(10 == len(actual))
+
+class Williams_Test(unittest.TestCase):
+    def test_Williams(self):
+        actual = ta.Williams(StockData.stock, 3)
+        self.failUnless(-100 <= min(actual))
+        self.failUnless(0 >= max(actual))
+        self.failUnless(10 == len(actual))
+
+class Stochastic_Test(unittest.TestCase):
+    def test_Stochastic(self):
+        actual = ta.Stochastic(StockData.stock, 3, 3)
+        self.failUnless(0 <= min(actual.K))
+        self.failUnless(100 >= max(actual.K))
+        self.failUnless(10 == len(actual.K))
+
+        self.failUnless(0 <= min(actual.D))
+        self.failUnless(100 >= max(actual.D))
+        self.failUnless(10 == len(actual.D))
+
+        self.failUnless(0 <= min(actual.DSlow))
+        self.failUnless(100 >= max(actual.DSlow))
+        self.failUnless(10 == len(actual.DSlow))
+
+class RSI_Test(unittest.TestCase):
+    def test_RSI(self):
+        actual = ta.RSI(StockData.stock, 3, price='dec')
+
+        self.failUnless(10 == len(actual))
+
+        actual = actual[~np.isnan(actual)]
+        self.failUnless(0 <= min(actual))
+        self.failUnless(100 >= max(actual))
 
 def main():
     unittest.main()
