@@ -8,6 +8,8 @@ import numpy as np
 import math
 import datetime as dt
 
+import matplotlib as mpl
+from matplotlib import dates
 
 from matplotlib.patches import Rectangle
 from matplotlib.lines import Line2D
@@ -28,8 +30,10 @@ def plotCandlestick(ax, quotes, rWidth=0.3, lWidth=1, colorup='g', colordown='r'
     the proper date format.
     '''
     ax.plot(quotes['date'], np.linspace(np.nan, np.nan, len(quotes['date'])), color='k')
+    #index = 0
     for q in quotes:
         t = q['date']
+        #t = index; index += 1
         o = q['open']
         h = q['high']
         l = q['low']
@@ -53,6 +57,16 @@ def plotCandlestick(ax, quotes, rWidth=0.3, lWidth=1, colorup='g', colordown='r'
         line = Line2D(xdata=(t, t), ydata=(l, h), color=color, linewidth=lWidth, antialiased=True);
         line.set_alpha(alpha)
         ax.add_line(line)
+
+
+
+    #labels = [str(d) for d in quotes['date']]
+    #lenL = len(labels)
+    #loc = mpl.ticker.MultipleLocator(base = lenL/5)
+    #loc = mpl.ticker.MaxNLocator(nbins = 7)
+    #plt.xticks(np.linspace(1, lenL, lenL), quotes['date'])
+    #ax.xaxis.set_major_locator(loc)
+
 
     ax.autoscale_view()
 
@@ -420,5 +434,34 @@ def RSI(quote, n, ave=SMMA, price='close'):
 
     return 100.0 - 100.0/(1.0 + RS)
 
+def ADX(quote, ave_len, ave=EMA):
+    '''
+    '''
 
+    up   =     quote['high'] - np.concatenate([[0], quote['high'][:-1]])
+    down = -1*(quote['low']  - np.concatenate([[0], quote['low'][:-1]]))
+
+    # arrays MUST be copied in order to prevent changing up/down during zeroing some elements of mUp/mDown
+    DM_PLUS = np.copy(up)
+    DM_MINUS = np.copy(down)
+
+    DM_PLUS[~(up > down)] = 0
+    DM_PLUS[up < 0] = 0
+
+    DM_MINUS[~(down > up)] = 0
+    DM_MINUS[down < 0] = 0
+
+
+    tr = TR(quote)
+
+    ave_DM_p = ave(DM_PLUS, ave_len)
+    ave_DM_m = ave(DM_MINS, ave_len)
+    ave_tr = ave(tr, ave_len)
+
+    DI = abs(ave_DM_p - ave_DM_m)
+    DX = DI/(ave_DM_p + ave_DM_m)
+
+    adx = 100.0*ave(DX, ave_len)
+
+    return adx
 
