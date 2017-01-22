@@ -60,6 +60,59 @@ class IRR_Test(unittest.TestCase):
 
         self.assertAlmostEqual(expected, actual)
 
+class PI_Test(unittest.TestCase):
+    def test_PI(self):
+        actual = fin.PI([-10, 11], 0.1)
+        expected = 1.0
+
+        self.assertAlmostEqual(expected, actual)
+    def test_PI_2(self):
+        actual = fin.PI([-10, 11, 12.1], 0.1)
+        expected = 2.0
+
+        self.assertAlmostEqual(expected, actual)
+
+
+class NPV_Test(unittest.TestCase):
+    def test_NPV(self):
+        actual = fin.NPV([-10, 11], 0.1)
+        expected = 0.0
+
+        self.assertAlmostEqual(expected, actual)
+    def test_NPV_2(self):
+        actual = fin.NPV([-10, 11, 12.1], 0.1)
+        expected = 10.0
+
+        self.assertAlmostEqual(expected, actual)
+
+class MIRR_Test(unittest.TestCase):
+    def test_MIRR(self):
+        actual = fin.MIRR([-11, 11], 0.1)
+        expected = 0.0
+
+        self.assertAlmostEqual(expected, actual)
+    def test_MIRR_2(self):
+        actual = fin.MIRR([-10, 11, 12.1], 0.1)
+        expected = 1.1*math.sqrt(2.0) - 1
+
+        self.assertAlmostEqual(expected, actual)
+
+class PaybackPeriod_Test(unittest.TestCase):
+    def test_PaybackPeriod(self):
+        actual = fin.PaybackPeriod([-1000, 550, 605, 700], 0.1)
+        expected = 2.0
+
+        self.assertAlmostEqual(expected, actual)
+    def test_PaybackPeriod_2(self):
+        p = 1.1
+        actual = fin.PaybackPeriod([-1000, 500*p, 250*p*p, 500*p*p*p], p - 1)
+        expected = 2.5
+
+        self.assertAlmostEqual(expected, actual)
+
+
+
+
 def main():
     unittest.main()
 
