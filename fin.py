@@ -166,6 +166,17 @@ def Duration(payments):
 
     return -Dsum / payments[0]
 
+def ModifiedDuration(payments, YTM):
+    '''
+    Modified duration of the investment.
+
+    payment - stream of payments (same as in Duration() function)
+    YTM     - Bond's Yield To Maturity. Actually, one can use an interest available
+              at the free market or whatever other value that was used to compute
+              the price of the bond.
+    '''
+    return Duration(payments)/(1 + YTM)
+
 def PaybackPeriod(payments, r):
     '''
     Time after which the initial investment is returned by the discounted payments.
