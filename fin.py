@@ -92,7 +92,7 @@ def IRR(payments):
     #roots = np.roots(payments)
     #sortedRoots = sorted(roots, key = lambda x : abs(np.imag(x)))
 
-    # item at the end is only needed to truncated pythons zero dimensional array
+    # item at the end is only needed to truncate python's zero dimensional array
     # we also substract 1 (one), cause what is computed is 1 + r
     return np.real(sorted(np.roots(payments), key = lambda x : abs(np.imag(x)))[0]).item() - 1
 
