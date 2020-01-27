@@ -82,19 +82,23 @@ def NPV(payments, r):
     return result
 
 
-def IRR(payments):
+def IRR(payments, print_all_roots = False):
     '''
     IRR - Internal Return Rate
 
-    payments - a stream of payments
+    payments        - a stream of payments
+    print_all_roots - shows all roots (debugging)
     '''
 
-    #roots = np.roots(payments)
-    #sortedRoots = sorted(roots, key = lambda x : abs(np.imag(x)))
+    roots = np.roots(payments)
+    sortedRoots = sorted(roots, key = lambda x : abs(np.imag(x)))
+    if(print_all_roots):
+        print sortedRoots
 
+    return np.real(sortedRoots[0]).item() - 1
     # item at the end is only needed to truncate python's zero dimensional array
     # we also substract 1 (one), cause what is computed is 1 + r
-    return np.real(sorted(np.roots(payments), key = lambda x : abs(np.imag(x)))[0]).item() - 1
+    #return np.real(sorted(np.roots(payments), key = lambda x : abs(np.imag(x)))[0]).item() - 1
 
 
 def PI(payments, r, moneyCost = None):
